@@ -153,6 +153,7 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--line);paddin
     <div class="seg" role="group" aria-label="View">
       <button id="v-situation" data-view="situation">Situation</button><button id="v-activities" data-view="activities">Activities</button><button id="v-priorities" data-view="priorities">Priorities</button>
     </div>
+    <select id="divSel" class="btn" aria-label="Filter by division"><option value="">All divisions</option><option>Western</option><option>Northern</option><option>Central</option><option>Eastern</option><option value="National">National only</option></select>
     <input type="search" id="q" placeholder="Search, e.g. Tavua" aria-label="Search">
     <button class="btn" id="reset">Reset filters</button>
     <button class="btn" id="themeBtn" type="button" aria-pressed="false" title="Switch between day and night mode">☾ Night mode</button>
@@ -784,6 +785,7 @@ function renderFoot(){
   $("#foot").innerHTML = `Sources: Divisional EOC SitReps – Western No. 3 and Northern No. 21 (21 Nov), Central and Eastern (19 Nov), Western No. 1 and Northern No. 18 (19 Nov); Nadi District carting sheet (19 Nov); Community Water Status – Combined 22 Nov 2026 (all four divisions; population estimated from the FBOS 2017 census by enumeration area where none was reported); WAF El Niño Stakeholder Brief and source-to-customer status (18 Nov; trucks and carting to 17 Nov), WAF carting update (19 Nov) and WAF assets map; WASH Cluster report (16–19 Nov) and assessment analysis (11–19 Nov); Education Cluster report (10–22 Oct) and MoE Western executive summary (19 Nov); Food Security & Livelihoods Cluster report (15–21 Oct); consolidated cluster summary (5 Nov) incl. WAF water-sector assessment (29 Oct); El Niño media monitoring scans (28 Oct – 20 Nov). MRD boreholes in red zones: NDRMO GIS “Boreholes in Red Zones” (MRD database extract of 10 Nov 2026, plus 16 boreholes drilled in 2025–26 not yet in the extract). Division, province and district boundaries: NDRMO GIS (Province and District_Adjusted_V3 layers); divisions dissolved from provinces. Site locations: NEOC locations file and MoH health facility layer; dashed pins are approximate. Media items are unverified. Compiled 22 Nov 2026 for NDRMO / NEOC.`;
 }
 function render(){
+  const ds=document.getElementById("divSel"); if(ds) ds.value=state.div||"";
   renderTabs(); renderChips(); renderKpis(); renderPanel(); renderBelow(); renderLegend(); drawMap();
 }
 /* ---------- events ---------- */
@@ -803,6 +805,7 @@ document.addEventListener("click",e=>{
   else if(t==="cst"){ state.cst = (val==="All"||state.cst===val)?null:val; render(); }
   else if(t==="tab"){ location.hash=val; }
 });
+$("#divSel").addEventListener("change",e=>setDiv(e.target.value||null,true));
 let qt; $("#q").addEventListener("input",e=>{ clearTimeout(qt); qt=setTimeout(()=>{ state.q=e.target.value; render(); },180); });
 $("#reset").addEventListener("click",()=>{ state.div=null; state.cl=null; state.q=""; state.sent=null; state.gapOnly=false; state.cst=null; $("#q").value=""; fitTo(null); render(); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>render());
