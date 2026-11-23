@@ -861,7 +861,7 @@ $("#divSel").addEventListener("change",e=>setDiv(e.target.value||null,true));
 let qt; $("#q").addEventListener("input",e=>{ clearTimeout(qt); qt=setTimeout(()=>{ state.q=e.target.value; render(); },180); });
 $("#reset").addEventListener("click",()=>{ state.div=null; state.cl=null; state.q=""; state.sent=null; state.gapOnly=false; state.cst=null; $("#q").value=""; fitTo(null); render(); });
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change",()=>render());
-route(); fitTo(null);
+if(location.hash){ try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){ location.hash=""; } } route(); fitTo(null);
 
 (function(){
   const btn=document.getElementById("themeBtn");
