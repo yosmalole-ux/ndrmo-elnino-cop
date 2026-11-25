@@ -524,10 +524,27 @@ function reqKpis(){
   h+=kpiCard("Delivered (reported)",fmt(rs.filter(r=>r.grp==="Delivered").length),"21–24 Nov reports","--ok","rq:Delivered");
   return h;
 }
+function reqChart(divs){
+  const G=["Open","In progress / regular","Delivered","Need reported"], LB={"In progress / regular":"In progress"};
+  const data=divs.map(d=>{const rs=D.req.filter(r=>r.div===d); return {d,v:G.map(g=>rs.filter(r=>r.grp===g).length),n:rs.length};});
+  const mx=Math.max(1,...data.map(x=>x.n)), W=520, L=70, R=92, bh=22, gap=12, top=34, H=top+data.length*(bh+gap);
+  const sc=v=>v/mx*(W-L-R);
+  let s=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Requests by status and division" style="display:block;max-width:${W}px;margin:4px 0 10px">`;
+  let lx=L; G.forEach(g=>{ s+=`<rect x="${lx}" y="6" width="10" height="10" rx="2" fill="${RQC[g]}"/><text x="${lx+14}" y="15" font-size="10.5" fill="var(--muted)">${LB[g]||g}</text>`; lx+=14+(LB[g]||g).length*6.1+14; });
+  data.forEach((x,i)=>{ const y=top+i*(bh+gap); let cx=L;
+    s+=`<text x="${L-8}" y="${y+bh/2+4}" font-size="11" text-anchor="end" fill="var(--ink)">${x.d}</text>`;
+    x.v.forEach((v,j)=>{ if(!v) return; const w=sc(v), g=G[j];
+      s+=`<rect x="${cx}" y="${y}" width="${Math.max(w-2,1)}" height="${bh}" rx="3" fill="${RQC[g]}" style="cursor:pointer" data-act="rq:${g}"><title>${x.d} – ${LB[g]||g}: ${v} request${v>1?"s":""}</title></rect>`;
+      if(w>24) s+=`<text x="${cx+w/2-1}" y="${y+bh/2+4}" font-size="10.5" text-anchor="middle" fill="#fff" pointer-events="none">${v}</text>`;
+      cx+=w; });
+    s+=`<text x="${cx+6}" y="${y+bh/2+4}" font-size="10.5" fill="var(--muted)">${x.n} · ${x.v[0]} open</text>`; });
+  return s+`</svg>`;
+}
 function reqPanel(){
   const divs=["Western","Northern","Central","Eastern"].filter(d=>!mapDiv()||d===mapDiv());
   const rows=divs.map(d=>{ const rs=D.req.filter(r=>r.div===d), op=rs.filter(r=>r.grp==="Open"); return `<tr><td><button class="hd" data-act="div:${d}">${d}</button></td><td>${op.length}</td><td>${rs.filter(r=>r.grp==="In progress / regular").length}</td><td>${rs.filter(r=>r.grp==="Delivered").length}</td><td>${fmt(op.reduce((a,r)=>a+(r.L||0),0))}</td></tr>`; }).join("");
   return `<div class="panel-head"><h2>Requests${mapDiv()?" – "+esc(mapDiv()):""}</h2></div><div class="sub">From the DivEOC reports of 23 and 24 Nov (Western SitRep No. 4–5, Northern Update No. 25 and 27 with its request list, Central carting register and IAP, Eastern update and IAP)</div>
+  ${reqChart(divs)}
   <div class="tblwrap"><table><thead><tr><th>Division</th><th>Open</th><th>In progress</th><th>Delivered</th><th>Open – litres asked</th></tr></thead><tbody>${rows}</tbody></table></div>
   <div class="note" style="margin-top:8px">Detail differs by division: Western lists Nadroga/Navosa and Nadi requests with population and date; Central's carting register gives volumes and delivery status; Northern's request list gives people and estimated cost (in the notes) but few volumes; Eastern now names Lau and Kadavu villages. A community with a carting and a tank request appears twice.</div>
   <div class="note" style="margin-top:6px">Map: teardrop markers at communities matched to the community water list (${reqGroups().length} places); the rest have no confirmed position yet. Water filling points are shown for reference. Tracker workbook: Requests, Resources and Offers Tracker – 25 Nov 2026 (Requests sheet; request IDs are permanent).</div>`;
